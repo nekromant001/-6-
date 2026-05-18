@@ -1,0 +1,110 @@
+PERSONAL_INCOME_TAX_RATE = 0.18
+MILITARY_TAX_RATE = 0.05
+SINGLE_CONTRIBUTION_RATE = 0.22
+MINIMUM_SALARY = 8647.00
+
+SINGLE_CONTRIBUTION_BASE_MIN = MINIMUM_SALARY
+SINGLE_CONTRIBUTION_BASE_MAX = MINIMUM_SALARY * 20
+
+DIYA_CITY_PERSONAL_INCOME_TAX_RATE = 0.05
+DIYA_CITY_MIN_EMPLOYEES = 9
+EURO_SALARY_LIMIT = 1200
+ADDITIONAL_PIT_RATE = 0.13
+
+def calculate_single_contribution(accrued_salary):
+    esv_base = accrued_salary
+    if esv_base < SINGLE_CONTRIBUTION_BASE_MIN:
+        esv_base = SINGLE_CONTRIBUTION_BASE_MIN
+    elif esv_base > SINGLE_CONTRIBUTION_BASE_MAX:
+        esv_base = SINGLE_CONTRIBUTION_BASE_MAX
+    return esv_base * SINGLE_CONTRIBUTION_RATE
+
+def main():
+    euro_rate = float(input("Введіть офіційний курс гривні до євро: "))
+    
+    accrued_salaries = [
+        28800.00,
+        3876.00,
+        235000.00,
+        42000.00,
+        31000.00,
+        27000.00,
+        19500.00,
+        22300.00,
+        18000.00
+    ]
+    
+    employees_count = len(accrued_salaries)
+    
+    print(f"\nКількість працівників: {employees_count}")
+    
+    if employees_count < DIYA_CITY_MIN_EMPLOYEES:
+        print("Підприємство НЕ відповідає вимозі Дія Сіті за кількістю працівників.")
+        print("Має бути не менше 9 працівників.")
+        return
+
+    average_salary = sum(accrued_salaries) / employees_count
+    print(f"\nСередня місячна зарплата: {average_salary:.2f} грн")
+    
+    required_salary_uah = EURO_SALARY_LIMIT * euro_rate
+    print(f"Мінімально допустима середня зарплата для Дія Сіті: {required_salary_uah:.2f} грн")
+    
+    personal_income_taxes = []
+    for salary in accrued_salaries:
+        tax = salary * DIYA_CITY_PERSONAL_INCOME_TAX_RATE
+        personal_income_taxes.append(tax)
+        
+    single_contributions = []
+    for salary in accrued_salaries:
+        esv = calculate_single_contribution(salary)
+        single_contributions.append(esv)
+        
+    total_accrued_salaries = sum(accrued_salaries)
+    total_pit = sum(personal_income_taxes)
+    total_esv = sum(single_contributions)
+    
+    print("\nНАРАХОВАНІ ЗАРПЛАТИ ПРАЦІВНИКІВ ")
+    for i in range(employees_count):
+        print(f"Працівник {i + 1}: {accrued_salaries[i]:.2f} грн")
+        
+    print("\nПДФО ПО КОЖНОМУ ПРАЦІВНИКУ (5%) ")
+    for i in range(employees_count):
+        print(f"Працівник {i + 1}: {personal_income_taxes[i]:.2f} грн")
+        
+    print("\nЄСВ ПО КОЖНОМУ ПРАЦІВНИКУ ")
+    for i in range(employees_count):
+        print(f"Працівник {i + 1}: {single_contributions[i]:.2f} грн")
+        
+    print("\n=== ЗАГАЛЬНІ СУМИ ===")
+    print(f"Сума нарахованих зарплат: {total_accrued_salaries:.2f} грн")
+    print(f"Сума ПДФО: {total_pit:.2f} грн")
+    print(f"Сума ЄСВ: {total_esv:.2f} грн")
+    
+    if average_salary >= required_salary_uah:
+        print("\nСередня зарплата ВІДПОВІДАЄ вимогам Дія Сіті.")
+        additional_pit_list = [0] * employees_count
+        additional_pit_total = 0
+    else:
+        print("\nСередня зарплата НЕ ВІДПОВІДАЄ вимогам Дія Сіті.")
+        print("Потрібно донарахувати 13% ПДФО за рахунок підприємства.")
+        
+        additional_pit_list = []
+        for salary in accrued_salaries:
+            extra_tax = salary * ADDITIONAL_PIT_RATE
+            additional_pit_list.append(extra_tax)
+            
+        additional_pit_total = sum(additional_pit_list)
+        
+        print("\nДОНАРАХОВАНИЙ ПДФО (13%) ЗА РАХУНОК ПІДПРИЄМСТВА ")
+        for i in range(employees_count):
+            print(f"Працівник {i + 1}: {additional_pit_list[i]:.2f} грн")
+            
+        print(f"Загальна сума донарахованого ПДФО: {additional_pit_total:.2f} грн")
+        
+    total_company_cost = total_accrued_salaries + total_esv + additional_pit_total
+    
+    print("\nЗАГАЛЬНІ ВИТРАТИ ПІДПРИЄМСТВА НА ОПЛАТУ ПРАЦІ ")
+    print(f"{total_company_cost:.2f} грн")
+
+if __name__ == "__main__":
+    main()
